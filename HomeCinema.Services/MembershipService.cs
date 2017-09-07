@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using HomeCinema.Data.Extensions;
@@ -47,14 +48,14 @@ namespace HomeCinema.Services
             _userRoleRepository.Add(userRole);
         }
 
-        private bool isPasswordValid(User user, string password)
+        private bool IsPasswordValid(User user, string password)
         {
             return string.Equals(_encryptionService.EncryptPassword(password, user.Salt), user.HashedPassword);
         }
 
-        private bool isUserValid(User user, string password)
+        private bool IsUserValid(User user, string password)
         {
-            if (isPasswordValid(user, password))
+            if (IsPasswordValid(user, password))
             {
                 return !user.IsLocked;
             }
@@ -68,7 +69,8 @@ namespace HomeCinema.Services
             var membershipCtx = new MembershipContext();
 
             var user = _userRepository.GetSingleByUsername(username);
-            if (user != null && isUserValid(user, password))
+
+            if (user != null && IsUserValid(user, password))
             {
                 var userRoles = GetUserRoles(user.Username);
                 membershipCtx.User = user;

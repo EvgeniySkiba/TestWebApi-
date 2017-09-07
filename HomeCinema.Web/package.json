@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "name": "asp.net",
+  "private": true,
+  "devDependencies": {
+    "bower": "1.7.9"
+  }
+}
+
+/*bower install angucomplete-alt --save
+bower install angular-base64
+bower install angular-file-upload
+bower install tg-angular-validator
+bower install bootstrap
+bower install raty
+bower install angular-loading-bar
+bower install angular-bootstrap
+
+*/

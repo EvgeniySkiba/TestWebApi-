@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HomeCinema.Data</RootNamespace>
     <AssemblyName>HomeCinema.Data</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -52,6 +52,10 @@
   <ItemGroup>
     <Compile Include="CustomerConfiguration.cs" />
     <Compile Include="EntityBaseConfiguration.cs" />
+    <Compile Include="Extensions\CustomerExtensions.cs" />
+    <Compile Include="Extensions\RentalExtensions.cs" />
+    <Compile Include="Extensions\StockExtensions.cs" />
+    <Compile Include="Extensions\UserExtensions.cs" />
     <Compile Include="GenreConfiguration.cs" />
     <Compile Include="HomeCinemaContext.cs" />
     <Compile Include="Infrastructure\DbFactory.cs" />
