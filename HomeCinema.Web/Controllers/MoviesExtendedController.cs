@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using HomeCinema.Data.Infrastructure;
-using HomeCinema.Data.Repositories;
 using HomeCinema.Entities;
 using HomeCinema.Web.Infrastructure.core;
 using HomeCinema.Web.Infrastructure.Extensions;
@@ -11,31 +10,25 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 
 namespace HomeCinema.Web.Controllers
 {
-
     [Authorize(Roles = "Admin")]
-    [RoutePrefix("api/movies")]
-    public class MoviesController : ApiControllerBase
+    [RoutePrefix("api/moviesextended")]
+    public class MoviesExtendedController : ApiControllerBaseExtended
     {
-        private readonly IEntityBaseRepository<Movie> _moviesRepository;
-
-        public MoviesController(IEntityBaseRepository<Movie> moviesRepository,
-            IEntityBaseRepository<Error> _errorsRepository, IUnitOfWork _unitOfWork)
-            : base(_errorsRepository, _unitOfWork)
-        {
-            _moviesRepository = moviesRepository;
-        }
+        public MoviesExtendedController(IDataRepositoryFactory dataRepositoryFactory, IUnitOfWork unitOfWork)
+            : base(dataRepositoryFactory, unitOfWork) { }
 
         [AllowAnonymous]
         [Route("latest")]
         public HttpResponseMessage Get(HttpRequestMessage request)
         {
-            return CreateHttpResponse(request, () =>
+            _requiredRepositories = new List<Type>() { typeof(Movie) };
+
+            return CreateHttpResponse(request, _requiredRepositories, () =>
             {
                 HttpResponseMessage response = null;
                 var movies = _moviesRepository.GetAll().OrderByDescending(m => m.ReleaseDate).Take(6).ToList();
@@ -51,7 +44,9 @@ namespace HomeCinema.Web.Controllers
         [Route("details/{id:int}")]
         public HttpResponseMessage Get(HttpRequestMessage request, int id)
         {
-            return CreateHttpResponse(request, () =>
+            _requiredRepositories = new List<Type>() { typeof(Movie) };
+
+            return CreateHttpResponse(request, _requiredRepositories, () =>
             {
                 HttpResponseMessage response = null;
                 var movie = _moviesRepository.GetSingle(id);
@@ -68,10 +63,11 @@ namespace HomeCinema.Web.Controllers
         [Route("{page:int=0}/{pageSize=3}/{filter?}")]
         public HttpResponseMessage Get(HttpRequestMessage request, int? page, int? pageSize, string filter = null)
         {
+            _requiredRepositories = new List<Type>() { typeof(Movie) };
             int currentPage = page.Value;
             int currentPageSize = pageSize.Value;
 
-            return CreateHttpResponse(request, () =>
+            return CreateHttpResponse(request, _requiredRepositories, () =>
             {
                 HttpResponseMessage response = null;
                 List<Movie> movies = null;
@@ -79,30 +75,21 @@ namespace HomeCinema.Web.Controllers
 
                 if (!string.IsNullOrEmpty(filter))
                 {
-                    movies = _moviesRepository
-                        .FindBy(m => m.Title.ToLower()
-                        .Contains(filter.ToLower().Trim()))
+                    movies = _moviesRepository.GetAll()
                         .OrderBy(m => m.ID)
-                        .Skip(currentPage * currentPageSize)
-                        .Take(currentPageSize)
-                        .ToList();
-
-                    totalMovies = _moviesRepository
-                        .FindBy(m => m.Title.ToLower()
+                        .Where(m => m.Title.ToLower()
                         .Contains(filter.ToLower().Trim()))
-                        .Count();
+                        .ToList();
                 }
                 else
                 {
-                    movies = _moviesRepository
-                        .GetAll()
-                        .OrderBy(m => m.ID)
-                        .Skip(currentPage * currentPageSize)
+                    movies = _moviesRepository.GetAll().ToList();
+                }
+
+                totalMovies = movies.Count();
+                movies = movies.Skip(currentPage * currentPageSize)
                         .Take(currentPageSize)
                         .ToList();
-
-                    totalMovies = _moviesRepository.GetAll().Count();
-                }
 
                 IEnumerable<MovieViewModel> moviesVM = Mapper.Map<IEnumerable<Movie>, IEnumerable<MovieViewModel>>(movies);
 
@@ -124,7 +111,9 @@ namespace HomeCinema.Web.Controllers
         [Route("add")]
         public HttpResponseMessage Add(HttpRequestMessage request, MovieViewModel movie)
         {
-            return CreateHttpResponse(request, () =>
+            _requiredRepositories = new List<Type>() { typeof(Movie), typeof(Stock) };
+
+            return CreateHttpResponse(request, _requiredRepositories, () =>
             {
                 HttpResponseMessage response = null;
 
@@ -165,7 +154,9 @@ namespace HomeCinema.Web.Controllers
         [Route("update")]
         public HttpResponseMessage Update(HttpRequestMessage request, MovieViewModel movie)
         {
-            return CreateHttpResponse(request, () =>
+            _requiredRepositories = new List<Type>() { typeof(Movie) };
+
+            return CreateHttpResponse(request, _requiredRepositories, () =>
             {
                 HttpResponseMessage response = null;
 
@@ -195,44 +186,49 @@ namespace HomeCinema.Web.Controllers
 
         [MimeMultipart]
         [Route("images/upload")]
-        public async Task<HttpResponseMessage> PostAsync(HttpRequestMessage request, int movieId)
+        public HttpResponseMessage Post(HttpRequestMessage request, int movieId)
         {
-            HttpResponseMessage response = null;
+            _requiredRepositories = new List<Type>() { typeof(Movie) };
 
-            var movieOld = _moviesRepository.GetSingle(movieId);
-            if (movieOld == null)
-                response = request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid movie.");
-            else
+            return CreateHttpResponse(request, _requiredRepositories, () =>
             {
-                var uploadPath = HttpContext.Current.Server.MapPath("~/Content/images/movies");
+                HttpResponseMessage response = null;
 
-                var multipartFormDataStreamProvider = new UploadMultipartFormProvider(uploadPath);
-
-                // Read the MIME multipart asynchronously 
-                await Request.Content.ReadAsMultipartAsync(multipartFormDataStreamProvider);
-
-                string _localFileName = multipartFormDataStreamProvider
-                    .FileData.Select(multiPartData => multiPartData.LocalFileName).FirstOrDefault();
-
-                // Create response
-                FileUploadResult fileUploadResult = new FileUploadResult
+                var movieOld = _moviesRepository.GetSingle(movieId);
+                if (movieOld == null)
+                    response = request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid movie.");
+                else
                 {
-                    LocalFilePath = _localFileName,
+                    var uploadPath = HttpContext.Current.Server.MapPath("~/Content/images/movies");
 
-                    FileName = Path.GetFileName(_localFileName),
+                    var multipartFormDataStreamProvider = new UploadMultipartFormProvider(uploadPath);
 
-                    FileLength = new FileInfo(_localFileName).Length
-                };
+                    // Read the MIME multipart asynchronously 
+                    Request.Content.ReadAsMultipartAsync(multipartFormDataStreamProvider);
 
-                // update database
-                movieOld.Image = fileUploadResult.FileName;
-                _moviesRepository.Edit(movieOld);
-                _unitOfWork.Commit();
+                    string _localFileName = multipartFormDataStreamProvider
+                        .FileData.Select(multiPartData => multiPartData.LocalFileName).FirstOrDefault();
 
-                response = request.CreateResponse(HttpStatusCode.OK, fileUploadResult);
-            }
+                    // Create response
+                    FileUploadResult fileUploadResult = new FileUploadResult
+                    {
+                        LocalFilePath = _localFileName,
 
-            return response;
+                        FileName = Path.GetFileName(_localFileName),
+
+                        FileLength = new FileInfo(_localFileName).Length
+                    };
+
+                    // update database
+                    movieOld.Image = fileUploadResult.FileName;
+                    _moviesRepository.Edit(movieOld);
+                    _unitOfWork.Commit();
+
+                    response = request.CreateResponse(HttpStatusCode.OK, fileUploadResult);
+                }
+
+                return response;
+            });
         }
     }
 }

@@ -14,38 +14,30 @@ namespace HomeCinema.Web.App_Start
                 "~/Scripts/Vendors/modernizr.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/vendors").Include(
-                "~/Scripts/jquery/dist/jquery.js",
-                "~/Scripts/bootstrap.js",
+                "~/Scripts/Vendors/jquery.js",
+                "~/Scripts/Vendors/bootstrap.js",
                 "~/Scripts/Vendors/toastr.js",
                 "~/Scripts/Vendors/jquery.raty.js",
                 "~/Scripts/Vendors/respond.src.js",
-                "~/Scripts/angular/angular.js",
-
-                "~/Scripts/angular-route/angular-route.js",
-                "~/Scripts/angular-cookies/angular-cookies.js",
-                "~/Scripts/tg-angular-validator/dist/angular-validator.js",
-
-                "~/Scripts/angular-base64/angular-base64.js",
-                "~/Scripts/angular-file-upload/dist/angular-file-upload.js",
-                "~/Scripts/angucomplete-alt/dist/angucomplete-alt.min.js",
-                "~/Scripts/angular-bootstrap/ui-bootstrap-tpls.js",
-                "~/Scripts/loading-bar/jquery.loadingbar.js",
-                "~/Scripts/angular-loading-bar/build/loading-bar.js",
-
-                   "~/Scripts/toast/lib/toast.js",
-
+                "~/Scripts/Vendors/angular.js",
+                "~/Scripts/Vendors/angular-route.js",
+                "~/Scripts/Vendors/angular-cookies.js",
+                "~/Scripts/Vendors/angular-validator.js",
+                "~/Scripts/Vendors/angular-base64.js",
+                "~/Scripts/Vendors/angular-file-upload.js",
+                "~/Scripts/Vendors/angucomplete-alt.min.js",
+                "~/Scripts/Vendors/ui-bootstrap-tpls-0.13.1.js",
                 "~/Scripts/Vendors/underscore.js",
                 "~/Scripts/Vendors/raphael.js",
                 "~/Scripts/Vendors/morris.js",
                 "~/Scripts/Vendors/jquery.fancybox.js",
-                "~/Scripts/Vendors/jquery.fancybox-media.js"
-             
-            ));
+                "~/Scripts/Vendors/jquery.fancybox-media.js",
+                "~/Scripts/Vendors/loading-bar.js"
+                ));
 
             bundles.Add(new ScriptBundle("~/bundles/spa").Include(
                 "~/Scripts/spa/modules/common.core.js",
                 "~/Scripts/spa/modules/common.ui.js",
-
                 "~/Scripts/spa/app.js",
                 "~/Scripts/spa/services/apiService.js",
                 "~/Scripts/spa/services/notificationService.js",
@@ -69,9 +61,9 @@ namespace HomeCinema.Web.App_Start
                 "~/Scripts/spa/movies/movieEditCtrl.js",
                 "~/Scripts/spa/controllers/rentalCtrl.js",
                 "~/Scripts/spa/rental/rentMovieCtrl.js",
-                "~/Scripts/spa/rental/rentStatsCtrl.js"                
+                "~/Scripts/spa/rental/rentStatsCtrl.js"
+                ));
 
-            ));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
                 "~/content/css/site.css",

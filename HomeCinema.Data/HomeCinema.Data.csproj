@@ -89,6 +89,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="MigrationsReadme.txt" />
     <Content Include="Readme.txt" />
   </ItemGroup>
   <ItemGroup>
